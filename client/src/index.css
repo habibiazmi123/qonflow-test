@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens for status badges and audit log highlights
+   Tailwind v4 @theme — these become available as bg-status-*, text-status-*, etc.
+   --------------------------------------------------------------------------- */
+@theme {
+  --color-status-to-do: #e5e7eb;
+  --color-status-to-do-text: #374151;
+  --color-status-pending: #fef3c7;
+  --color-status-pending-text: #92400e;
+  --color-status-in-progress: #dbeafe;
+  --color-status-in-progress-text: #1e40af;
+  --color-status-done: #d1fae5;
+  --color-status-done-text: #065f46;
+  --color-audit-from: #fee2e2;
+  --color-audit-from-text: #991b1b;
+  --color-audit-to: #d1fae5;
+  --color-audit-to-text: #065f46;
+}
