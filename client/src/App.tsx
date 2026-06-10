@@ -40,32 +40,40 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <header className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">Mini Task Manager</h1>
+    <div className="min-h-screen flex flex-col bg-background text-on-surface font-body-md">
+      {/* ========== TopNavBar ========== */}
+      <nav className="bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center w-full px-6 h-16 shrink-0">
+        <span className="text-headline-md font-bold text-primary">TaskCore</span>
         <ActorSelector actor={actor} onChange={handleActorChange} />
-      </header>
+      </nav>
 
-      <main>
-        <div className="mb-4">
-          <CreateTaskForm onSubmit={addTask} />
+      {/* ========== Main Content ========== */}
+      <main className="flex-1 bg-surface-container-low">
+        <div className="max-w-3xl mx-auto px-6 py-8">
+          {error && (
+            <div className="flex items-center gap-3 px-4 py-3 mb-6 bg-error-container border border-error/30 rounded-lg text-body-sm text-on-error-container">
+              <span className="material-symbols-outlined text-body-md">error</span>
+              {error}
+            </div>
+          )}
+
+          {/* Create Task button above the list */}
+          <div className="mb-6">
+            <CreateTaskForm onSubmit={addTask} />
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <span className="text-body-md text-on-surface-variant">Loading tasks...</span>
+            </div>
+          ) : (
+            <TaskList
+              tasks={tasks}
+              onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
-
-        {error && (
-          <p className="bg-red-50 text-red-600 px-3.5 py-2.5 rounded-md border border-red-300 mb-4 text-sm">
-            {error}
-          </p>
-        )}
-
-        {loading ? (
-          <p className="text-gray-500 text-sm">Loading tasks...</p>
-        ) : (
-          <TaskList
-            tasks={tasks}
-            onStatusChange={handleStatusChange}
-            onDelete={handleDelete}
-          />
-        )}
       </main>
     </div>
   );
