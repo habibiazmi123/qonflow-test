@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const mod = require\\('swagger-jsdoc'\\); console.log\\(typeof mod, Object.keys\\(mod\\)\\)\")"
+    ]
+  }
+}

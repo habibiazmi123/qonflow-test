@@ -42,9 +42,11 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-surface font-body-md">
       {/* ========== TopNavBar ========== */}
-      <nav className="bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center w-full px-6 h-16 shrink-0">
-        <span className="text-headline-md font-bold text-primary">TaskCore</span>
-        <ActorSelector actor={actor} onChange={handleActorChange} />
+      <nav className="bg-surface-container-lowest border-b border-outline-variant w-full h-16 shrink-0">
+        <div className="max-w-3xl mx-auto px-6 h-full flex items-center justify-between">
+          <span className="text-headline-md font-bold text-primary">TaskCore</span>
+          <ActorSelector actor={actor} onChange={handleActorChange} />
+        </div>
       </nav>
 
       {/* ========== Main Content ========== */}

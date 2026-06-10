@@ -31,7 +31,8 @@ Catatan
 Tidak ada satu solusi benar
 Lebih baik solusi sederhana tapi jelas, dibanding kompleks tapi tidak konsisten
 Kami lebih menghargai pemikiran yang matang daripada kode yang sempurna
-Requirements1. Task Management
+Requirements
+1. Task Management
 Setiap task memiliki struktur minimum:
 Fitur wajib:
 Create task
