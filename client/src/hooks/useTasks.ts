@@ -1,62 +1,72 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Task, AuditLogEntry, TaskStatus } from '../types';
 import * as api from '../api';
 
+// ---------------------------------------------------------------------------
+// Query key factory
+// ---------------------------------------------------------------------------
+export const queryKeys = {
+  tasks: ['tasks'] as const,
+  auditLogs: (taskId: string) => ['auditLogs', taskId] as const,
+};
+
+// ---------------------------------------------------------------------------
+// Tasks hook
+// ---------------------------------------------------------------------------
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await api.fetchTasks();
-      setTasks(data);
-    } catch (err) {
-      setError(err instanceof api.ApiError ? err.message : 'Failed to load tasks');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: tasks = [], isLoading, error } = useQuery<Task[]>({
+    queryKey: queryKeys.tasks,
+    queryFn: api.fetchTasks,
+  });
 
-  useEffect(() => { load(); }, [load]);
+  const addMutation = useMutation({
+    mutationFn: ({ title, description }: { title: string; description: string }) =>
+      api.createTask(title, description),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks });
+    },
+  });
 
-  const addTask = async (title: string, description: string) => {
-    const task = await api.createTask(title, description);
-    await load();
-    return task;
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status, actor }: { id: string; status: TaskStatus; actor: string }) =>
+      api.updateTaskStatus(id, status, actor),
+    onSuccess: (_, variables) => {
+      // Invalidate both tasks list and audit logs for this task
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auditLogs(variables.id) });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.deleteTask(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tasks });
+    },
+  });
+
+  return {
+    tasks,
+    loading: isLoading,
+    error: error?.message ?? null,
+    addTask: (title: string, description: string) =>
+      addMutation.mutateAsync({ title, description }),
+    changeStatus: (id: string, status: TaskStatus, actor: string) =>
+      statusMutation.mutateAsync({ id, status, actor }),
+    removeTask: (id: string) => deleteMutation.mutateAsync(id),
   };
-
-  const changeStatus = async (id: string, status: TaskStatus, actor: string) => {
-    const task = await api.updateTaskStatus(id, status, actor);
-    setTasks((prev) => prev.map((t) => (t.id === id ? task : t)));
-    return task;
-  };
-
-  const removeTask = async (id: string) => {
-    await api.deleteTask(id);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  return { tasks, loading, error, reload: load, addTask, changeStatus, removeTask };
 }
 
+// ---------------------------------------------------------------------------
+// Audit logs hook
+// ---------------------------------------------------------------------------
 export function useAuditLogs(taskId: string | null) {
-  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { data: logs = [], isLoading } = useQuery<AuditLogEntry[]>({
+    queryKey: queryKeys.auditLogs(taskId ?? ''),
+    queryFn: () => api.fetchAuditLogs(taskId!),
+    enabled: !!taskId,
+  });
 
-  useEffect(() => {
-    if (!taskId) {
-      setLogs([]);
-      return;
-    }
-    setLoading(true);
-    api.fetchAuditLogs(taskId)
-      .then(setLogs)
-      .catch(() => setLogs([]))
-      .finally(() => setLoading(false));
-  }, [taskId]);
-
-  return { logs, loading };
+  return { logs, loading: isLoading };
 }
